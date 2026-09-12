@@ -1,0 +1,63 @@
+/**
+ * Shared utility classes used by Alert / Loader and any page rendering
+ * status messages. Import once at the app root (main.tsx).
+ */
+
+.alert {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin-bottom: 12px;
+  border: 1px solid transparent;
+}
+
+.error-message {
+  background-color: #ffe5e5;
+  color: #d32f2f;
+  border-color: #d32f2f;
+}
+
+.warning-message {
+  background-color: #fff4e0;
+  color: #8b4513;
+  border-color: #e0a04a;
+}
+
+.info-message {
+  background-color: #e5f1ff;
+  color: #185fa5;
+  border-color: #6aa3df;
+}
+
+.success-message {
+  background-color: #e6f7ec;
+  color: #1e7e34;
+  border-color: #4caf50;
+}
+
+.alert-center {
+  text-align: center;
+}
+
+.loader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #595959;
+  padding: 8px 0;
+}
+
+.loader-inline {
+  padding: 0;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.loader-label {
+  /* Follows the theme's body-font token: DM Sans on the classic look,
+     Inter under medmalguard. Replaced a dedicated
+     [data-theme="medmalguard"] .loader-label override (ADR 0004 step 2). */
+  font-family: var(--font-body, "DM Sans", sans-serif);
+}

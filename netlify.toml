@@ -1,0 +1,98 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Pin the build to Node 22 — `vite` 7 and `vitest` 3 require
+# `^20.19 || >=22.12` (see package.json `engines` + `.nvmrc`). Without this
+# Netlify picks its own default major and the build can silently drift.
+[build.environment]
+  NODE_VERSION = "22"
+
+# All /api/* calls go through this edge proxy. It re-emits the upstream Set-Cookie
+# as a host-only first-party cookie on this origin, so iOS Safari (ITP) doesn't
+# drop the auth cookie as a cross-site cookie.
+[[edge_functions]]
+  function = "api-proxy"
+  path = "/api/*"
+
+# CSP violation report sink (see the Content-Security-Policy `report-uri` /
+# `report-to` below). Logs each report to the function log — no storage.
+[[edge_functions]]
+  function = "csp-report"
+  path = "/_csp-report"
+
+# SPA fallback: serve index.html for any non-file route so client-side React Router routes
+# work on reload / direct URL entry. Edge functions run before redirects, so /api/* still
+# hits the proxy above.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers for every response.
+#
+# Content-Security-Policy notes:
+#   - script-src: app bundle is served from 'self'; Stripe.js loads from js.stripe.com;
+#     Google Identity Services (Sign-In with Google) loads from accounts.google.com/gsi/client.
+#     No inline scripts are emitted by the Vite build, so 'unsafe-inline' is NOT granted here.
+#   - style-src: 'unsafe-inline' is STILL required — the app sets per-instance
+#     sizing/spacing through ~745 React inline style={{...}} attributes across
+#     ~47 components (nonces/hashes do not apply to style attributes). Dropping
+#     it needs a full migration of those to classes/utilities — tracked as an
+#     audit backlog item, not done here. The one inline <style> block in
+#     index.html WAS removed (its @keyframes moved to responsive.css). The
+#     Google Fonts stylesheet is pulled from fonts.googleapis.com (one
+#     consolidated <link> in index.html <head>).
+#   - img-src: app images are 'self'; data:/blob: cover inline previews and canvas
+#     downloads; *.stripe.com for Stripe branding; images.unsplash.com for the desktop
+#     hub testimonial avatars (see shared/components/desktop/hubData.js).
+#   - font-src: Google Fonts font files are served from fonts.gstatic.com.
+#   - frame-src: Stripe Elements / 3DS frames (js.stripe.com, hooks.stripe.com, m.stripe.com,
+#     m.stripe.network), the embedded DocuSign signing iframe (*.docusign.net / *.docusign.com),
+#     and the Google Sign-In button iframe (accounts.google.com).
+#     'self' is included because the DocuSign return URL is same-origin and is loaded back into
+#     the signing iframe on completion.
+#   - connect-src: the API is same-origin (/api/* via the edge proxy) so 'self' covers it;
+#     Stripe.js calls api.stripe.com and posts fraud signals to m.stripe.com / m.stripe.network;
+#     Google Sign-In posts credential responses to accounts.google.com;
+#     *.ingest.sentry.io / *.ingest.us.sentry.io are the Sentry crash-report
+#     endpoints — only used when the build has VITE_SENTRY_DSN set
+#     (src/shared/observability/); harmless to allow otherwise.
+#   - frame-ancestors 'self' (mirrored by X-Frame-Options: SAMEORIGIN): blocks third-party
+#     clickjacking while still allowing the app's own same-origin DocuSign return iframe.
+#   - report-uri / report-to: violations are POSTed to the same-origin
+#     `/_csp-report` edge function (netlify/edge-functions/csp-report.js), which
+#     logs them. `report-uri` is the legacy directive (still what most browsers
+#     honour); `report-to` is the Reporting-API successor and pairs with the
+#     `Reporting-Endpoints` header below.
+#
+# Also set: Strict-Transport-Security (HSTS, 2y + preload) and a deny-by-default
+# Permissions-Policy.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' https://js.stripe.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.stripe.com https://images.unsplash.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://m.stripe.com https://m.stripe.network https://accounts.google.com/gsi/ https://*.ingest.sentry.io https://*.ingest.us.sentry.io; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://m.stripe.com https://m.stripe.network https://*.docusign.net https://*.docusign.com https://accounts.google.com/gsi/; report-uri /_csp-report; report-to csp-endpoint"
+    Reporting-Endpoints = "csp-endpoint=\"/_csp-report\""
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Force HTTPS for two years, cover subdomains, and allow preload-list
+    # inclusion. Netlify already redirects HTTP→HTTPS; this closes the
+    # TLS-stripping window on the very first visit.
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    # Deny every powerful feature by default. `payment` is allowed for `self`
+    # and `js.stripe.com` so Stripe's 3DS / future wallet flows in its own
+    # iframe keep working; everything else (camera, mic, geolocation, USB,
+    # sensors, …) is off for this origin and every embedded frame (Stripe,
+    # DocuSign, Google).
+    Permissions-Policy = "accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(self \"https://js.stripe.com\"), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), usb=(), xr-spatial-tracking=()"
+
+# Vite content-hashes every filename under /assets/, so a given URL's bytes
+# never change — serve it from disk cache for a year and skip revalidation on
+# repeat visits. index.html itself stays under the /* rule above (no explicit
+# Cache-Control → Netlify's short-lived default + ETag), so new deploys are
+# still picked up immediately.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

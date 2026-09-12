@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/medmalguard-logo.svg" />
+    <link rel="shortcut icon" type="image/svg+xml" href="/medmalguard-logo.svg" />
+    <link rel="apple-touch-icon" href="/medmalguard-logo.svg" />
+
+    <!-- Fonts: warm the connection, then pull every family the app + desktop
+         hub + google theme use in ONE stylesheet request. Previously two
+         <link>s were injected from inside <Shell> (React does not hoist them,
+         so they were discovered late → FOUT/CLS) and Roboto came via a
+         render-blocking @import in responsive.css. `display=swap` keeps text
+         visible during load; the preconnects collapse most of the swap window. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@450;500;600;700&family=Roboto:wght@500;700&display=swap"
+    />
+
+    <!-- DocuSign: pre-resolve DNS for all likely signing endpoints -->
+    <link rel="dns-prefetch" href="//www.docusign.net" />
+    <link rel="dns-prefetch" href="//demo.docusign.net" />
+    <link rel="dns-prefetch" href="//na1.docusign.net" />
+    <link rel="dns-prefetch" href="//na2.docusign.net" />
+    <link rel="dns-prefetch" href="//na3.docusign.net" />
+    <link rel="dns-prefetch" href="//na4.docusign.net" />
+    <link rel="dns-prefetch" href="//account.docusign.com" />
+    <link rel="dns-prefetch" href="//static3.docusign.net" />
+
+    <!-- DocuSign: pre-establish TCP+TLS for the primary signing and account hosts -->
+    <link rel="preconnect" href="https://www.docusign.net" crossorigin />
+    <link rel="preconnect" href="https://demo.docusign.net" crossorigin />
+    <link rel="preconnect" href="https://account.docusign.com" crossorigin />
+    <link rel="preconnect" href="https://static3.docusign.net" crossorigin />
+
+    <!-- Stripe performance hints: preconnect warms DNS+TCP+TLS for the two origins
+         that are always needed when the payment page loads (Stripe.js bundle and
+         Stripe API). dns-prefetch is kept as a fallback for browsers that do not
+         support preconnect. m.stripe.com / m.stripe.network get dns-prefetch only
+         because those are loaded by Stripe.js itself after loadStripe() fires; a
+         full preconnect from the document head would partially negate the deferred
+         loading we get from @stripe/stripe-js/pure. -->
+    <link rel="preconnect" href="https://js.stripe.com" />
+    <link rel="dns-prefetch" href="//js.stripe.com" />
+    <link rel="preconnect" href="https://api.stripe.com" />
+    <link rel="dns-prefetch" href="//api.stripe.com" />
+    <link rel="dns-prefetch" href="//m.stripe.com" />
+    <link rel="dns-prefetch" href="//m.stripe.network" />
+
+    <title>Internal Medicine Quote to Bind</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

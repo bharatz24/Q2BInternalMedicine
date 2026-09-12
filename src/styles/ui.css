@@ -1,0 +1,273 @@
+/**
+ * Component / layout classes — the first step off the app's inline-style
+ * architecture (see REACT_FRONTEND_AUDIT.md and docs/ARCHITECTURE.md →
+ * "Inline-style / theme-coupling migration").
+ *
+ * Rules for anything added here:
+ *  - Colors, fonts and spacing come from the CSS custom properties defined
+ *    in `responsive.css` (`--brand`, `--blue`, the `--hub-brand-*` ramp, …)
+ *    — never a hard-coded hex that a theme would need to override.
+ *  - Theme-specific looks are expressed as `[data-theme="x"] .my-class { … }`
+ *    here, NOT as `[style*="…"] … !important` hacks in responsive.css.
+ *  - Class names are prefixed `ui-` (shared primitives) or scoped to a
+ *    feature (`wizard-`, `auth-`, …) so they read unambiguously in the DOM.
+ *
+ * Imported once from `main.tsx`, after `responsive.css` so the token
+ * definitions are already in scope.
+ */
+
+/* ── Primitives ─────────────────────────────────────────────────────────── */
+
+/* Flex filler that pushes trailing content to the bottom of a column and
+   guarantees a minimum gap. Was `<div style={{ flex: 1, minHeight: 16 }} />`. */
+.ui-spacer {
+  flex: 1;
+  min-height: 16px;
+}
+
+/* Display headings (was inline `fontFamily: "'Fraunces', serif"`). The font
+   itself comes from the `--font-heading` token; this class is the hook the
+   medmalguard theme uses to add the landing kit's heading weight / tracking
+   / ink (see the `[data-theme="medmalguard"] .ui-heading` rule in
+   responsive.css) — a plain font-token swap can't carry those. Elements
+   keep their own inline `fontSize` / `color` / `margin`. See ADR 0004. */
+.ui-heading {
+  font-family: var(--font-heading, "Fraunces", serif);
+}
+
+/* ── Wizard session-boot loader (FlowLayout) ────────────────────────────── */
+
+.wizard-boot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.wizard-boot-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.wizard-boot-spinner {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+  border-top-color: var(--blue, #2563eb);
+  animation: wizard-boot-spin 0.8s linear infinite;
+}
+
+.wizard-boot-label {
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  color: #555;
+}
+
+@keyframes wizard-boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wizard-boot-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ── Error boundary fallback (REACT_FRONTEND_AUDIT.md §6) ───────────────── */
+
+/* Shown by ErrorBoundary when a render crashes — friendly copy + recover
+   actions, never the raw `error.message` (dev builds add a <details> dump).
+   Sized to sit inside the app card without a full-bleed takeover. */
+.error-boundary-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 28px 22px;
+  font-family: var(--font-body, "DM Sans", sans-serif);
+}
+
+.error-boundary-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--brand-dark, #085041);
+}
+
+.error-boundary-body {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #444;
+}
+
+.error-boundary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.error-boundary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.error-boundary-btn--primary {
+  background: var(--brand, #0f6e56);
+  color: #fff;
+  border: 1px solid var(--brand, #0f6e56);
+}
+
+.error-boundary-btn--ghost {
+  background: transparent;
+  color: #555;
+  border: 1px solid #d0d0d0;
+}
+
+.error-boundary-detail {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #595959;
+  width: 100%;
+}
+.error-boundary-detail pre {
+  overflow-x: auto;
+  padding: 10px;
+  background: #f6f6f6;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ── Accessibility (REACT_FRONTEND_AUDIT.md §5) ─────────────────────────── */
+
+/* Visible focus for keyboard users, app-wide. `inputBase` used to set
+   `outline: none` with only a JS border-colour swap as the cue (invisible to
+   keyboard-only users, WCAG 2.4.7). This restores a real indicator for every
+   focusable element while keeping mouse clicks clean via :focus-visible. */
+:focus-visible {
+  outline: 2px solid var(--brand, #0f6e56);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+/* Inputs / textareas / selects: pair the outline with a brand border so the
+   field itself reads as active (the old onFocus border swap still runs too). */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: var(--brand, #0f6e56);
+}
+
+/* Skip-to-content link — first tab stop, visually hidden until focused. */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 10000;
+  padding: 10px 16px;
+  background: #fff;
+  color: var(--brand-dark, #085041);
+  border: 2px solid var(--brand, #0f6e56);
+  border-radius: 8px;
+  font-family: var(--font-body, "DM Sans", sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease-in-out;
+}
+.skip-link:focus {
+  top: 12px;
+}
+
+/* Screen-reader-only content (route-change announcements, extra labels).
+   `!important` on the box metrics because responsive.css sets
+   `min-height: 100vh !important` on `#root > div > div` at some breakpoints
+   and any accidental selector overlap must not give this a real size. */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  max-height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Question option grids (QuestionRenderer) ───────────────────────────── */
+
+/* Choice options used to stack one per row, so a long list ran off the
+   fold — worst on `/practice`, whose "general procedures" checkbox carries
+   37 options (plan §6 group 1, Q P7b) and whose ~20 Yes/No questions each
+   burned two full rows on two words. These lay the options out as a
+   responsive grid instead: the track width is chosen per question from the
+   longest label (see `optionGridColumns` in QuestionRenderer), `auto-fit`
+   fills as many tracks as the column can hold and collapses the spares, so
+   a 2-option question splits the width in half and the 37-option list
+   becomes three tidy columns — with no media query needed, since the same
+   rule reflows to one or two tracks in the phone-width form column.
+
+   `!important` on the margin: RadioCard / Toggle set `margin-bottom: 8`
+   inline (they are still stacked elsewhere in the app), which would
+   otherwise add to `gap` and break the row rhythm. `height: 100%` squares
+   off the cards in a row whose labels wrap to different line counts. */
+.q-option-grid {
+  display: grid;
+  gap: 8px;
+  align-items: stretch;
+}
+.q-option-grid > button {
+  margin-bottom: 0 !important;
+  height: 100%;
+}
+
+/* Question grid — the page-level counterpart of `.q-option-grid`. A tree
+   group such as `/practice`'s "License, Scope & Practice" runs to ~30
+   questions; rendering every one of them full-width turns a form into a
+   scroll. Questions that take a short answer (a percentage, a count, a
+   date — see `isCompactQuestion` in QuestionRenderer) claim one column,
+   everything else spans the row, so the page reads as a laid-out form
+   rather than a list. Collapses to a single column in the phone-width
+   form column, where two tracks would leave neither one usable. */
+.q-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+}
+.q-grid > * {
+  min-width: 0;
+}
+.q-grid-item--full {
+  grid-column: 1 / -1;
+}
+@media (max-width: 600px) {
+  .q-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,1255 @@
+/* Roboto (google theme's buttons) is now loaded from index.html <head>
+   alongside the other families in one preconnected request — a render-
+   blocking @import here defeated that. Only the google theme references it. */
+
+/* Global responsive overlay.
+   Loaded once from main.tsx. Targets the Shell wrapper and common
+   patterns via structural selectors so inline styles don't have to change. */
+
+/* ---------- Theme tokens ----------
+   Color names imported from src/shared/constants.js resolve to these CSS
+   custom properties at runtime. `:root` is the classic SelectFirst
+   green theme; `[data-theme="selectfirst"]` is the blue/navy theme
+   modeled on the registration prototype (see header toggle). The
+   theme switcher writes the attribute onto <html> so every consumer
+   re-resolves on the next paint with no React rerender required. */
+:root {
+  --brand: #0f6e56;
+  --brand-light: #e1f5ee;
+  --brand-dark: #085041;
+  --brand-shadow: rgba(15, 110, 86, 0.2);
+  --orange: #d85a30;
+  --orange-bg: #faece7;
+  --red: #a32d2d;
+  --red-bg: #fcebeb;
+  --blue: #185fa5;
+  --blue-bg: #e6f1fb;
+
+  /* ----- Typography tokens -----
+     Body + heading font stacks, resolved at runtime like the color tokens.
+     `:root` is the classic look — DM Sans body, Fraunces display headings.
+     Only `[data-theme="medmalguard"]` overrides them (to Inter, matching the
+     landing kit); every other theme inherits these. Components reference
+     them inline as `fontFamily: "var(--font-body)"` /
+     `"var(--font-heading)"` — this replaced the old
+     `[style*="DM Sans"]` / `[style*="Fraunces"]` attribute-substring
+     overrides (see docs/ARCHITECTURE.md). */
+  --font-body: "DM Sans", sans-serif;
+  --font-heading: "Fraunces", serif;
+
+  /* ----- Desktop hub brand ramp (classic = teal) -----
+     The desktop "Quote Hub" components (src/shared/components/desktop/*) read
+     these via the TEAL_* tokens in hubTheme.js. In the classic theme they
+     resolve to the original teal ramp; the selectfirst block below swaps
+     them to the matching blue ramp so the desktop hub follows the theme
+     toggle exactly like mobile. Values mirror Tailwind teal-*. */
+  --hub-brand-50: #f0fdfa;
+  --hub-brand-100: #ccfbf1;
+  --hub-brand-200: #99f6e4;
+  --hub-brand-300: #5eead4;
+  --hub-brand-400: #2dd4bf;
+  --hub-brand-600: #0d9488;
+  --hub-brand-700: #0f766e;
+  --hub-brand-800: #115e59;
+  --hub-brand-900: #134e4a;
+  --hub-brand-950: #042f2e;
+}
+
+[data-theme="selectfirst"] {
+  /* Primary action / accent — modeled on the registration prototype's
+     vivid blue. BRAND_DARK lands on the deep navy used for headings;
+     BRAND_LIGHT is the pale tint behind the avatar/check chips. */
+  --brand: #2563eb;
+  --brand-light: #dbeafe;
+  --brand-dark: #0f172a;
+  --brand-shadow: rgba(37, 99, 235, 0.22);
+  /* Secondary palette — kept in the same blue/slate family so legacy
+     ORANGE/RED accents (chips, alerts) read as one cohesive design
+     instead of clashing with the cooler brand. */
+  --orange: #ea580c;
+  --orange-bg: #ffedd5;
+  --red: #dc2626;
+  --red-bg: #fee2e2;
+  --blue: #1d4ed8;
+  --blue-bg: #dbeafe;
+
+  /* ----- Desktop hub brand ramp (selectfirst = blue) -----
+     Parallel to the teal ramp in :root, mapped onto Tailwind blue-*.
+     The desktop hub's TEAL_* tokens (hubTheme.js) resolve here when the
+     selectfirst theme is active, turning the fixed teal hub blue to match
+     the registration-prototype look — same toggle mobile already uses. */
+  --hub-brand-50: #eff6ff; /* blue-50  */
+  --hub-brand-100: #dbeafe; /* blue-100 */
+  --hub-brand-200: #bfdbfe; /* blue-200 */
+  --hub-brand-300: #93c5fd; /* blue-300 */
+  --hub-brand-400: #60a5fa; /* blue-400 */
+  --hub-brand-600: #2563eb; /* blue-600 */
+  --hub-brand-700: #1d4ed8; /* blue-700 */
+  --hub-brand-800: #1e40af; /* blue-800 */
+  --hub-brand-900: #1e3a8a; /* blue-900 */
+  --hub-brand-950: #172554; /* blue-950 */
+}
+
+[data-theme="skyfirst"] {
+  /* Third brand: the live SelectFirstInsurance.com palette. Colors lifted
+     straight from the production site's CSS — BRAND is the sky-blue
+     #1696CB the site uses for links/CTAs; BRAND_DARK is the #223645 navy
+     used for headings and nav text; the warm accents map to the site's
+     golden #F7C000 and coral-red #E84A43. Same token structure as the
+     selectfirst block: base tokens for mobile + a --hub-brand-* ramp for
+     the desktop hub. */
+  --brand: #1696cb;
+  --brand-light: #e3f3fb;
+  --brand-dark: #223645;
+  --brand-shadow: rgba(22, 150, 203, 0.22);
+  /* Secondary palette pulled from the site: golden CTA highlight and the
+     coral-red used for alerts/errors, kept as the legacy ORANGE/RED slots
+     so existing chips and alerts pick them up automatically. */
+  --orange: #f7a800;
+  --orange-bg: #fef3e0;
+  --red: #e84a43;
+  --red-bg: #fcebeb;
+  --blue: #1d4960;
+  --blue-bg: #e3f3fb;
+
+  /* ----- Desktop hub brand ramp (skyfirst = SelectFirst sky #1696CB) -----
+     Ramp built around #1696CB as the 600 stop, lighter tints above and the
+     site's #1d4960 / #223645 deep navies below, so the desktop hub's TEAL_*
+     tokens resolve to the SelectFirstInsurance.com look when this theme is
+     active. */
+  --hub-brand-50: #e3f3fb;
+  --hub-brand-100: #c2e6f6;
+  --hub-brand-200: #8fd0ee;
+  --hub-brand-300: #61aff7;
+  --hub-brand-400: #34a6df;
+  --hub-brand-600: #1696cb; /* brand */
+  --hub-brand-700: #117aa6;
+  --hub-brand-800: #1d4960;
+  --hub-brand-900: #223645;
+  --hub-brand-950: #14222c;
+}
+
+[data-theme="google"] {
+  /* Fourth brand: Google Material palette, lifted from the
+     selectfirst-insurance-malpractice-quote-hub design system (its
+     index.css @theme tokens). BRAND is Google Blue #1a73e8; BRAND_DARK is
+     the near-black #202124 used for body text/headings. The legacy
+     ORANGE/RED/BLUE slots map onto Google's yellow, red, and blue stops so
+     existing chips and alerts pick up the Material look automatically. */
+  --brand: #1a73e8;
+  --brand-light: #e8f0fe;
+  --brand-dark: #202124;
+  --brand-shadow: rgba(26, 115, 232, 0.22);
+  /* Secondary palette from the Google design tokens. */
+  --orange: #b06000; /* google-yellow-600 */
+  --orange-bg: #fef7e0; /* google-yellow-50  */
+  --red: #c5221f; /* google-red-600    */
+  --red-bg: #fce8e6; /* google-red-50     */
+  --blue: #1557b0; /* google-blue-700   */
+  --blue-bg: #e8f0fe; /* google-blue-50    */
+
+  /* ----- Desktop hub brand ramp (google = Material blue #1a73e8) -----
+     Ramp built around #1a73e8 as the 600 stop, using the design system's
+     google-blue tints above and deeper Material blues below, so the desktop
+     hub's TEAL_* tokens resolve to the Google look when this theme is
+     active. */
+  --hub-brand-50: #e8f0fe;
+  --hub-brand-100: #d2e3fc;
+  --hub-brand-200: #aecbfa;
+  --hub-brand-300: #8ab4f8;
+  --hub-brand-400: #4285f4;
+  --hub-brand-600: #1a73e8; /* brand */
+  --hub-brand-700: #1557b0;
+  --hub-brand-800: #174ea6;
+  --hub-brand-900: #103d7a;
+  --hub-brand-950: #0b2a54;
+}
+
+[data-theme="medmalguard"] {
+  /* Fifth brand: the MedMalGuard UI kit (Downloads/ui-kit), extracted from
+     the PA quote-to-bind landing concepts. BRAND is the kit's primary blue
+     #6286ed; BRAND_STRONG/DARK use its pressed blue #2653d4 and ink navy
+     #2a2c45. The legacy ORANGE/RED/BLUE slots map onto the kit's CTA orange
+     #fc9026, danger #c0564f, and accent-strong #2653d4 so existing chips and
+     alerts pick up the kit look automatically. Success ramp uses the kit's
+     #1cc88a. Same token structure as the other theme blocks. */
+  --brand: #6286ed;
+  --brand-light: #eff3fd; /* accent-tint */
+  --brand-dark: #2a2c45; /* ink         */
+  --brand-shadow: rgba(98, 134, 237, 0.22);
+  /* Typography → Inter, matching the landing kit. This is the one theme
+     that swaps the font tokens; the `.ui-heading` rule below carries the
+     kit's heading weight/tracking/ink that a font swap alone can't. */
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Secondary palette from the kit tokens. */
+  --orange: #fc9026; /* cta-orange  */
+  --orange-bg: #fff3e6;
+  --red: #c0564f; /* danger      */
+  --red-bg: #fdf4f3; /* danger-tint */
+  --blue: #2653d4; /* accent-strong */
+  --blue-bg: #eff3fd; /* accent-tint   */
+
+  /* ----- Desktop hub brand ramp (medmalguard = kit blue #6286ed) -----
+     Ramp built around #6286ed as the 600 stop, with paler accent tints above
+     and the kit's pressed #2653d4 / ink #2a2c45 deep tones below, so the
+     desktop hub's TEAL_* tokens resolve to the MedMalGuard look when this
+     theme is active. */
+  --hub-brand-50: #eff3fd;
+  --hub-brand-100: #dce5fb;
+  --hub-brand-200: #c0d1f8;
+  --hub-brand-300: #9bb5f3;
+  --hub-brand-400: #7c9ef0;
+  --hub-brand-600: #6286ed; /* brand */
+  --hub-brand-700: #2653d4; /* accent-strong */
+  --hub-brand-800: #1e44b0;
+  --hub-brand-900: #2a2c45; /* ink */
+  --hub-brand-950: #1c1d30;
+}
+
+/* ---------- Google theme: primary button restyle ----------
+   Match the reference CTA: vivid Material blue #4285F4, bold uppercase
+   white text with letter-spacing, 12px rounding, and a soft Material drop
+   shadow. The primary CTAs carry the `.ui-btn-primary` class (they still
+   also spread the shared `btnPrimary` inline object for their base look, so
+   `!important` is needed to win the cascade). This replaced a
+   `button[style*="var(--brand)"]` attribute-substring selector — see
+   ADR 0004. Icon/back buttons and outline buttons don't take the class, so
+   they're untouched; the ORANGE/BLUE dashboard action buttons deliberately
+   don't either (they override the brand background). */
+[data-theme="google"] .ui-btn-primary {
+  background: #4285f4 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-family: "Roboto", "DM Sans", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 1px 3px rgba(60, 64, 67, 0.3),
+    0 4px 8px 3px rgba(60, 64, 67, 0.15) !important;
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease !important;
+}
+[data-theme="google"] .ui-btn-primary:hover {
+  background: #1a73e8 !important;
+  box-shadow:
+    0 1px 3px rgba(60, 64, 67, 0.3),
+    0 6px 12px 4px rgba(60, 64, 67, 0.18) !important;
+}
+[data-theme="google"] .ui-btn-primary:active {
+  background: #1557b0 !important;
+}
+
+/* (Removed: the google-theme "top promo banner" restyle. It targeted the
+   teal ribbon in the old HubHeader, which the MedMalGuard header replaced
+   and is no longer in the tree. The rules were dead. ADR 0004 step 5.) */
+
+/* ---------- MedMalGuard (Cl1) theme: landing-kit alignment ----------
+   The landing page (MedMalGuardLanding.jsx) sets the app's main theme:
+   Inter typography, ink #2a2c45 headings at bold weights, kit-blue
+   accents. Body + heading fonts now come from the `--font-body` /
+   `--font-heading` tokens (swapped to Inter in the theme block above), so
+   the old `[style*="DM Sans"]` / `[style*="Fraunces"]` substring overrides
+   are gone. A font swap can't carry the kit's heading weight/tracking/ink,
+   so headings additionally take the `.ui-heading` class and this rule
+   supplies those three under the medmalguard theme. Every Fraunces usage
+   is dark-on-light (#1a1a1a or BRAND_DARK), so forcing the kit ink is
+   safe. `!important` beats the elements' own inline weight/color — this is
+   a themed class rule, not the `[style*=…]` hack it replaced (ADR 0004). */
+[data-theme="medmalguard"] .ui-heading {
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  color: #2a2c45 !important;
+}
+/* Primary CTAs: the kit's buttons are bold Inter. The font now comes from
+   the `--font-body` token (Inter under this theme), so only the weight is
+   forced here. Retargeted from `button[style*="var(--brand)"]` to the
+   `.ui-btn-primary` class — see ADR 0004. */
+[data-theme="medmalguard"] .ui-btn-primary {
+  font-weight: 700 !important;
+}
+/* Status alerts (shared/styles.css classes) mapped onto the kit ramps:
+   danger #c0564f, accent blue, success #1cc88a/#0f9d6e, CTA orange. */
+[data-theme="medmalguard"] .error-message {
+  background-color: #fdf4f3;
+  color: #c0564f;
+  border-color: #c0564f;
+}
+[data-theme="medmalguard"] .info-message {
+  background-color: #eff3fd;
+  color: #2653d4;
+  border-color: #6286ed;
+}
+[data-theme="medmalguard"] .success-message {
+  background-color: #e6f8f1;
+  color: #0f9d6e;
+  border-color: #1cc88a;
+}
+[data-theme="medmalguard"] .warning-message {
+  background-color: #fff3e6;
+  color: #a05c0c;
+  border-color: #fc9026;
+}
+/* App canvas matches the kit's bg-app (wins over the plain `body` rules
+   below on attribute specificity). */
+[data-theme="medmalguard"] body {
+  background: #fafbfd;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Skeleton-shimmer sweep for the wizard progress bar's in-progress segment
+   (src/modules/Quote/components/ProgressBar.tsx, applied as an inline
+   `animation`). Moved here from an inline <style> block in index.html so the
+   CSP no longer needs 'unsafe-inline' to cover a <style> element. */
+@keyframes q2bShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Goal-gradient pulse for the rail's "You're covered" chip — fires only
+   on the Payment step (the final wizard step). Soft brightness + scale
+   change; deliberately gentle so it cues anticipation without crossing
+   into nag territory. See src/shared/components/QuoteSnapshotRail.jsx. */
+@keyframes q2bGoalPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--brand-shadow);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+    transform: scale(1.015);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes q2bGoalPulse {
+    0%,
+    100% {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+/* ---------- Desktop hub redesign keyframes ----------
+   Used only by the desktop-only hub components (HubHeader live badge,
+   advising CTA). Defined globally but the elements that consume them are
+   hidden below 1024px, so mobile never animates. */
+@keyframes q2bHubPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  75%,
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes q2bHubPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes q2bHubPing {
+    0%,
+    100% {
+      transform: none;
+      opacity: 0.85;
+    }
+  }
+  @keyframes q2bHubPulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #fafaf8;
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Prevent iOS Safari zoom-on-focus: form fields must be >=16px on mobile. */
+@media (max-width: 480px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------- Mobile (≤480px): make the phone-frame full-bleed ---------- */
+@media (max-width: 480px) {
+  /* Shell outer wrapper */
+  #root > div {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+  /* Shell inner card */
+  #root > div > div {
+    border-radius: 0 !important;
+    border: none !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+  }
+  /* Tighten outer padding on the wizard chrome. The FlowLayout topbar /
+     progress-bar wrapper / routed-content column carry the `.wizard-*`
+     classes below; this replaced selectors keyed on their inline
+     padding/border strings (ADR 0004 step 4). The progress + content
+     columns share one rule — matching the pre-migration behaviour, where
+     the broad `[style*="padding: 0px 18px"]` substring rule also caught
+     the content column's `0px 18px 18px` and won on source order. */
+  #root > div > div > .wizard-progress,
+  #root > div > div > .wizard-content {
+    padding: 0 14px !important;
+  }
+  #root > div > div > .wizard-topbar {
+    padding: 12px 14px 8px !important;
+  }
+  /* Allow inline button rows to wrap instead of overflowing */
+  div[style*="display: flex"][style*="gap"] {
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- Small phones (≤360px): even tighter ---------- */
+@media (max-width: 360px) {
+  #root > div > div > .wizard-progress,
+  #root > div > div > .wizard-content {
+    padding: 0 10px !important;
+  }
+}
+
+/* ---------- Tablet/desktop (≥768px): comfortable card ---------- */
+@media (min-width: 768px) {
+  body {
+    padding: 24px 0;
+  }
+  #root > div > div {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* ---------- Touch targets ---------- */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 40px;
+  }
+}
+
+/* The desktop snapshot rail is rendered at every viewport so the React
+   tree is identical; the desktop block below un-hides it on >=1024px. */
+.desktop-rail {
+  display: none;
+}
+
+/* Desktop hub redesign components (HubHeader / HubMarketing /
+   HubCOIPreview) are always in the React tree but hidden below 1024px so
+   the mobile phone-frame UI is pixel-identical to before. The >=1024px
+   block flips them to block. */
+.hub-desktop {
+  display: none;
+}
+
+/* App-wide MedMalGuard header wrapper. Unlike .hub-desktop it is visible at
+   EVERY viewport — the NavBar inside collapses to logo + hamburger on phones
+   (see the max-width:720px block below), so all pages share the landing
+   page's top navigation on mobile too. */
+.app-header {
+  width: 100%;
+}
+
+/* Brand wordmark + phone shown next to the SF_LOGO on desktop only.
+   Always in the React tree (rendered by FlowLayout) so we don't need a
+   render-time viewport check; CSS hides it below 1024px. */
+.brand-wordmark {
+  display: none;
+}
+
+/* ---------- Desktop (>=1024px): two-pane shell ----------
+   Spec section 2 sizing tokens, lifted here as CSS custom properties so
+   the rest of the desktop block reads against named values. */
+:root {
+  --max-content: 1200px;
+  --max-form-col: 560px;
+  --side-col: 360px;
+  --gutter-lg: 48px;
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding: 0;
+    background: #fafaf8;
+  }
+
+  /* Outer Shell wrapper: widen from 420px → 1200px, transparent. */
+  #root > div {
+    max-width: var(--max-content) !important;
+    margin: 0 auto !important;
+  }
+
+  /* Inner "card": drop the phone look on every desktop route (no border,
+     no min/max height, no overflow hidden). This part fires regardless
+     of whether the rail is present — it just un-cards the Shell. */
+  #root > div > div {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Two-column grid ONLY when the snapshot rail is in the tree.
+     Special routes (/dashboard, /signin, /order-details, /profile) live
+     outside <FlowLayout/> so they never mount QuoteSnapshotRail; without
+     this :has() guard, the grid would engage on those pages too and
+     leave a 360px empty column on the right. Spec section 3's Special
+     Routes table explicitly requires those pages to be single-column. */
+  /* Hub redesign: the inner Shell card becomes a column grid. The wizard
+     form column (`main`) and the snapshot rail (`rail`) form the centered
+     two-column body; every other child of the card (the hub header, COI
+     previewer, and marketing sections) spans the full width as its own
+     row via `grid-column: 1 / -1` (see below). The hub header replaces
+     the old minimal topbar, which is hidden on desktop. */
+  #root > div > div:has(> aside.desktop-rail) {
+    display: grid !important;
+    grid-template-columns: minmax(0, var(--max-form-col)) var(--side-col);
+    column-gap: var(--gutter-lg);
+    row-gap: 0;
+    justify-content: center;
+    align-content: start;
+    padding: 0 0 0 !important;
+  }
+
+  /* Un-hide the desktop hub components (default `display: none` above) and
+     let them span both grid columns as full rows. Their own internal
+     max-width containers handle centering, matching the reference. */
+  .hub-desktop {
+    display: block;
+  }
+  #root > div > div:has(> aside.desktop-rail) > .hub-desktop,
+  #root > div > div:has(> aside.desktop-rail) > .app-header,
+  /* The new MedMalGuard landing (route /) and its dark footer render as
+     full-width rows in the two-pane card, same as the hub chrome — the
+     landing above the wizard body, the footer last (at the very end). */
+  #root > div > div:has(> aside.desktop-rail) > .mmg-landing,
+  #root > div > div:has(> aside.desktop-rail) > .mmg-landing-footer {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  /* Print: the COI section stays; its marketing chrome hides. */
+  @media print {
+    .hub-print-hidden {
+      display: none !important;
+    }
+  }
+
+  /* Hide the old minimal desktop chrome — the hub header + footer replace
+     it. These rules target the FlowLayout topbar, the mobile-position
+     ProgressBar wrapper, and the thin footer line — now by their
+     `.wizard-*` classes (was: their inline border/padding strings; ADR
+     0004 step 4). Mobile (< 1024px) keeps all three. */
+  #root > div > div:has(> aside.desktop-rail) > .wizard-topbar {
+    display: none !important;
+  }
+  #root > div > div:has(> aside.desktop-rail) > .wizard-progress {
+    display: none !important;
+  }
+  /* Hide the mobile-position footer line on desktop — the hub footer
+     (inside HubMarketing) carries the desktop footer. */
+  #root > div > div:has(> aside.desktop-rail) > .wizard-footer-line {
+    display: none !important;
+  }
+
+  /* …except the wizard footer line (steps 2–10): show the SAME mobile
+     footer on desktop, resized — full-width row, larger type, comfortable
+     padding. Higher specificity (doubled class) than the hide rule above
+     so it wins. */
+  #root > div > div:has(> aside.desktop-rail) > .wizard-footer-line.wizard-footer-line {
+    display: block !important;
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 24px 40px !important;
+    font-size: 13px !important;
+    color: #5b5e6b !important;
+    border-top: 1px solid #eef0f5 !important;
+  }
+
+  /* The snapshot rail (always rendered, hidden on mobile, shown here).
+     NOTE: three properties cooperate here and none are redundant —
+       1. `align-self: start` (outer aside) lets the rail sit at the top
+          of its grid row (just under the footer line), so the cards
+          start immediately rather than stretching across the full row;
+       2. `position: sticky; top: 32` (inner wrap, in QuoteSnapshotRail
+          styles) keeps the rail in view as the form column scrolls;
+       3. `maxHeight: calc(100vh - 64px); overflowY: auto` (inner wrap)
+          caps the rail to the viewport so a tall rail on a short form
+          column self-scrolls instead of clipping below the fold.
+     Stripping any one breaks a real case — don't simplify. */
+  .desktop-rail {
+    grid-column: 2;
+    display: block !important;
+    align-self: start;
+    padding-top: 32px;
+  }
+
+  /* The wizard form column — left side of the centered two-column body. */
+  #root > div > div:has(> aside.desktop-rail) > .wizard-content {
+    grid-column: 1;
+    overflow: visible !important;
+    padding: 32px 0 48px !important;
+  }
+
+  /* Brand wordmark is replaced by the hub header on desktop — keep it
+     hidden (it stays visible only on mobile, where its default is none
+     and no desktop rule un-hides it now). */
+  .brand-wordmark {
+    display: none !important;
+  }
+
+  /* Desktop rail's progress + footer (rendered inside QuoteSnapshotRail
+     so they sit at the top of the right column, matching the mock). */
+  .desktop-rail .rail-progress {
+    padding: 8px 0 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .desktop-rail .rail-footer {
+    padding: 10px 0 18px;
+    text-align: center;
+    font-size: 11px;
+    color: #595959;
+    font-family: "DM Sans", sans-serif;
+  }
+
+  /* Typography & spacing uplift inside the form column. */
+  #root > div > div > .wizard-content h1,
+  #root > div > div > .wizard-content h2 {
+    font-size: 28px;
+  }
+  #root > div > div input,
+  #root > div > div select,
+  #root > div > div textarea {
+    font-size: 15px;
+  }
+
+  /* ----- Hub brand look for the wizard form column (desktop only) -----
+     Re-map the runtime brand tokens to the hub's brand ramp, scoped to the
+     two-pane card so primary buttons, info boxes, and accents in the
+     routed step content match the new design. This overrides the tokens
+     by inheritance ONLY inside the desktop two-pane layout — mobile and
+     the special single-column routes are unaffected.
+
+     The values come from the theme-aware --hub-brand-* ramp, so the desktop
+     hub now follows the classic/selectfirst toggle just like mobile: teal
+     in classic, blue under selectfirst. (--brand-shadow can't reference the
+     ramp at the needed alpha, so it's set per-theme below.) */
+  #root > div > div:has(> aside.desktop-rail) {
+    --brand: var(--hub-brand-800);
+    --brand-light: var(--hub-brand-50);
+    --brand-dark: var(--hub-brand-900);
+    --brand-shadow: rgba(17, 94, 89, 0.18);
+    --blue: var(--hub-brand-700); /* links read brand, not generic blue */
+    --blue-bg: var(--hub-brand-50);
+  }
+  [data-theme="selectfirst"] #root > div > div:has(> aside.desktop-rail) {
+    --brand-shadow: rgba(37, 99, 235, 0.2); /* blue-600 @ ~0.2 */
+  }
+  [data-theme="skyfirst"] #root > div > div:has(> aside.desktop-rail) {
+    --brand-shadow: rgba(0, 156, 222, 0.2); /* #009CDE @ ~0.2 */
+  }
+  /* Form column typography → Inter, to match the hub chrome. */
+  #root > div > div:has(> aside.desktop-rail) > .wizard-content {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  }
+  /* Keep the big hero serif numerals tasteful: the soft-quote premium and
+     page H1s use Fraunces inline; leave those as-is (they read as a
+     deliberate display face against the Inter body). */
+
+  /* (Removed: a desktop "widen the modal card to 640px" override. It
+     matched an overlay styled `position: absolute` — ModalShell has since
+     moved to `position: fixed` with `maxWidth: 560` set inline, so the
+     rule matched nothing. The 560 inline cap now applies at every width.
+     ADR 0004 step 5.) */
+}
+
+/* Very large screens: keep the 1200px cap, add neutral side bands and a
+   subtle card chrome — but only when the two-pane grid actually engaged
+   (i.e. the rail is mounted). Without the :has() guard the chrome would
+   wrap special-route pages in a card around a half-empty layout. */
+@media (min-width: 1440px) {
+  body {
+    background: #f4f4f1;
+  }
+  #root > div > div:has(> aside.desktop-rail) {
+    background: #fafaf8 !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ============================================================
+   MedMalGuard "Claude1" landing page (route "/")
+   ------------------------------------------------------------
+   Rendered by FlowLayout via MedMalGuardLanding.jsx. It is its own
+   full-bleed page (own nav + footer), so the Shell phone-frame and the
+   teal-hub two-pane chrome must NOT apply here. Scoped entirely via
+   :has(> .mmg-landing) on the Shell card / wrapper so no other route is
+   touched. Responsive: single-column on phones, two-column hero +
+   4-up trust band on >=1024px.
+   ============================================================ */
+
+/* Escape the Shell card chrome on the landing at every width: no border,
+   no rounded phone frame, no height caps — the landing draws its own
+   surfaces full-bleed. (Matches what the desktop rail does for the wizard,
+   but here it applies at all widths since the landing is responsive.) */
+#root > div:has(> div > .mmg-landing),
+#root > div:has(> div .mmg-landing) {
+  max-width: none !important;
+  margin: 0 !important;
+}
+#root > div > div:has(> .mmg-landing) {
+  border: none !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  min-height: auto !important;
+  max-height: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* The landing's own sections center their content via inner max-width
+   containers (nav 1200, hero/sections wrap at 1200). The top-level
+   .mmg-section provides the 52px/40px section rhythm from the kit. */
+.mmg-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 52px 40px;
+}
+
+/* Hero: stacks on mobile, two columns from 980px up. The calculator card
+   is fixed ~460px on desktop and full-width when stacked. */
+.mmg-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+.mmg-hero__right {
+  width: 100%;
+}
+@media (min-width: 980px) {
+  .mmg-hero {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 56px;
+  }
+  .mmg-hero__left {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .mmg-hero__right {
+    flex: 0 0 460px;
+    width: 460px;
+  }
+}
+
+/* Trust band: 2-up on small screens, 4-up with dividers on >=768px.
+   Use grid `gap` filled by a band-colored background so the gridlines read
+   as 1px dividers regardless of column count — no per-child nth-child
+   border juggling. */
+.mmg-trust-band {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #eef0f5; /* shows through the gap as dividers */
+  border-top: 1px solid #eef0f5;
+  border-bottom: 1px solid #eef0f5;
+}
+.mmg-trust-band > * {
+  padding: 24px 28px;
+  background: #fafbfd;
+}
+@media (min-width: 768px) {
+  .mmg-trust-band {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .mmg-trust-band > * {
+    padding: 28px 32px;
+  }
+}
+
+/* How-it-works: single column on mobile, 3-up on >=768px. */
+.mmg-how-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 768px) {
+  .mmg-how-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Articles grid (ArticlesPage): 1-up on mobile, 2-up >=720px, 3-up >=1024px. */
+.mmg-articles-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 720px) {
+  .mmg-articles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .mmg-articles-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Need-help rows: stacked on mobile, side-by-side with a divider on >=768px. */
+.mmg-need-rows {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-top: 6px;
+}
+.mmg-need-rows > * + * {
+  border-top: 1px solid #f4f5f9;
+}
+@media (min-width: 768px) {
+  .mmg-need-rows {
+    grid-template-columns: 1fr 1fr;
+  }
+  .mmg-need-rows > * + * {
+    border-top: none;
+    border-left: 1px solid #f4f5f9;
+    padding-left: 28px;
+  }
+}
+
+/* Nav collapses to logo + avatar (when signed in) + hamburger on narrow
+   screens. Links, phone, Sign In, and the quote CTA all move into the
+   hamburger menu sheet (see NavBar in MedMalGuardLanding.jsx). */
+@media (max-width: 720px) {
+  .mmg-nav__inner {
+    padding: 16px 18px !important;
+  }
+  .mmg-nav__link {
+    display: none !important;
+  }
+  .mmg-nav__cta {
+    display: none !important;
+  }
+  .mmg-nav__phone {
+    display: none !important;
+  }
+  .mmg-nav__ghost {
+    display: none !important;
+  }
+  .mmg-nav__burger {
+    display: inline-flex !important;
+  }
+  .mmg-nav__right {
+    gap: 12px !important;
+  }
+  .mmg-section {
+    padding: 36px 18px;
+  }
+  .mmg-h1 {
+    font-size: 34px !important;
+  }
+  .mmg-h1__br {
+    display: none;
+  }
+  .mmg-sub {
+    font-size: 16px !important;
+  }
+}
+
+.mmg-nav__link:hover {
+  color: #2653d4 !important;
+}
+
+/* Footer stacks its two lines on phones. (Rendered at the very end of the
+   landing route by FlowLayout, outside .mmg-landing — targeted by class.) */
+@media (max-width: 720px) {
+  .mmg-landing-footer {
+    padding: 22px 18px !important;
+  }
+}
+
+/* "Affordable Coverage / Certificate in Minutes" map + state grid section
+   (MedMalGuardMap), mounted after the dark footer on the landing route.
+   The source uses Bootstrap col-3 cells in a centered flex-wrap row → 4
+   per row on desktop; we drop to 5/4/3 as the viewport narrows. The whole
+   section spans full width inside the two-pane grid like the other landing
+   chrome. */
+#root > div > div:has(> aside.desktop-rail) > .mmg-map {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+/* "Affordable Coverage / Certificate in Minutes" heading banner: constrain
+   its width/margin to match the trust band (max-width 1200, centered) so it
+   doesn't span the full page. Margin/width only — padding, background,
+   height, and layout are untouched. Same >=768px breakpoint as the band. */
+@media (min-width: 768px) {
+  .mmg-map__banner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+.mmg-map__grid {
+  display: grid;
+  /* 20 active states → 5 columns makes a clean 5×4 block (was 8-wide for the
+     full 50-state grid, which left a lopsided final row). */
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.mmg-map__cell {
+  border: 5px solid #fff;
+  border-radius: 8px;
+  padding: 8px 6px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: #2a2c45;
+}
+/* 5 columns hold at tablet too (5×4 = 20). */
+@media (max-width: 992px) {
+  .mmg-map__grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .mmg-map {
+  }
+  .mmg-map__grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .mmg-map__cell {
+    font-size: 14px;
+    padding: 7px 4px;
+    border-width: 3px;
+  }
+}
+@media (max-width: 420px) {
+  .mmg-map__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================================
+   Auth pages (SignInPage) — responsive desktop version.
+   Mobile (< 1024px): the page keeps the minimal SF_LOGO topbar +
+   phone-frame card exactly as before (.hub-desktop header stays hidden;
+   .auth-card / .auth-body carry only their original inline styles, so the
+   phone layout is pixel-identical). Desktop (>= 1024px): the MedMalGuard
+   header (same as the pricing/articles pages) shows full-bleed, the mobile
+   topbar hides, the card chrome is dropped, and the form centers in a
+   comfortable column on the app's off-white desktop canvas.
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* The auth page owns the full Shell card as a single column: header row
+     on top, then the centered form body. (The global desktop rule already
+     un-cards #root > div > div; this lays the auth children out.) */
+  #root > div > div:has(> .auth-page) {
+    display: block !important;
+    padding: 0 !important;
+    background: #fafaf8 !important;
+  }
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* MedMalGuard header spans full width (its own inner max-width:1200px
+     centers the bar), matching the pricing/landing pages. */
+  .auth-page > .app-header {
+    width: 100%;
+  }
+
+  /* The mobile minimal topbar is replaced by the header above. */
+  .auth-page .auth-mobile-topbar {
+    display: none !important;
+  }
+
+  /* Body fills remaining height and centers the card both axes. */
+  .auth-page .auth-body {
+    flex: 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px !important;
+    overflow: visible !important;
+  }
+
+  /* The auth card: a real card on desktop (white, bordered, soft shadow),
+     constrained to a readable width and centered. On mobile it is an
+     unstyled passthrough, so the phone layout is unchanged. */
+  .auth-page .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+    padding: 12px 28px 28px;
+  }
+}
+
+/* ============================================================
+   Dashboard ("Welcome back, …") — responsive desktop version.
+   Mobile (< 1024px): unchanged — minimal SF_LOGO topbar + phone-frame card
+   (.hub-desktop header stays hidden; .dash-card / .dash-body / .dash-footer
+   carry only their original inline styles). Desktop (>= 1024px): the
+   MedMalGuard header (same as the pricing/sign-in pages) shows full-bleed,
+   the mobile topbar hides, the card chrome is dropped, and the account
+   content sits in a centered column on the app's off-white canvas with a
+   full-width footer pinned at the bottom.
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* Single column: header row, scrolling body, footer row. (The global
+     desktop rule already un-cards #root > div > div.) */
+  #root > div > div:has(> .dash-page) {
+    display: block !important;
+    padding: 0 !important;
+    background: #fafaf8 !important;
+  }
+  .dash-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* MedMalGuard header spans full width (its own inner max-width centers
+     the bar), matching the pricing/sign-in pages. */
+  .dash-page > .app-header {
+    width: 100%;
+  }
+
+  /* Mobile minimal topbar replaced by the header above. */
+  .dash-page .dash-mobile-topbar {
+    display: none !important;
+  }
+
+  /* Body fills remaining height; content centers in a comfortable column. */
+  .dash-page .dash-body {
+    flex: 1;
+    align-items: center;
+    padding: 40px 24px !important;
+    overflow: visible !important;
+  }
+
+  /* The account card: a real card on desktop (white, bordered, soft
+     shadow), constrained to a readable width and centered. On mobile it is
+     an unstyled passthrough, so the phone layout is unchanged. */
+  .dash-page .dash-card {
+    width: 100%;
+    max-width: 640px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+    padding: 24px 32px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Footer spans full width on its off-white strip. */
+  .dash-page .dash-footer {
+    width: 100%;
+    padding: 18px 40px !important;
+    font-size: 12px !important;
+    background: #fafaf8;
+  }
+}
+
+/* ============================================================
+   My Profile — responsive desktop version.
+   Mobile (< 1024px): unchanged — minimal SF_LOGO topbar (with back arrow) +
+   phone-frame card; the info cards stack in a single column exactly as
+   before (.profile-grid is a plain block on mobile, so each card keeps its
+   own marginBottom). Desktop (>= 1024px): the MedMalGuard header (same as
+   the pricing/sign-in/dashboard pages) shows full-bleed, the mobile topbar
+   hides, the card chrome is dropped, and the four info cards lay out in a
+   centered two-column grid on the app's off-white canvas.
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* Single column: header row, scrolling body, footer row. (The global
+     desktop rule already un-cards #root > div > div.) */
+  #root > div > div:has(> .profile-page) {
+    display: block !important;
+    padding: 0 !important;
+    background: #fafaf8 !important;
+  }
+  .profile-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* MedMalGuard header spans full width (its own inner max-width centers
+     the bar), matching the pricing/dashboard pages. */
+  .profile-page > .app-header {
+    width: 100%;
+  }
+
+  /* Mobile minimal topbar replaced by the header above. */
+  .profile-page .profile-mobile-topbar {
+    display: none !important;
+  }
+
+  /* Body fills remaining height; content centers in a comfortable column. */
+  .profile-page .profile-body {
+    flex: 1;
+    align-items: center;
+    padding: 40px 24px !important;
+    overflow: visible !important;
+  }
+
+  /* The profile card: a real card on desktop (white, bordered, soft
+     shadow), wide enough for two columns of info cards. On mobile it is an
+     unstyled passthrough, so the phone layout is unchanged. */
+  .profile-page .profile-card {
+    width: 100%;
+    max-width: 760px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+    padding: 24px 32px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Info cards: two-up grid on desktop. The cards' own marginBottom is
+     neutralized so the grid `gap` controls spacing evenly. (On mobile this
+     selector doesn't apply — .profile-grid stays a plain block.) */
+  .profile-page .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .profile-page .profile-grid > div {
+    margin-bottom: 0 !important;
+  }
+
+  /* Footer spans full width on its off-white strip. */
+  .profile-page .profile-footer {
+    width: 100%;
+    padding: 18px 40px !important;
+    font-size: 12px !important;
+    background: #fafaf8;
+  }
+}
+
+/* ============================================================
+   Policy details (OrderDetailsPage) — responsive desktop version.
+   Mobile (< 1024px): unchanged — minimal SF_LOGO topbar (with back arrow) +
+   phone-frame card; the Coverage card, Documents list, and Need-help block
+   stack in a single column exactly as before (.policy-grid / .policy-col are
+   plain blocks on mobile). Desktop (>= 1024px): the MedMalGuard header (same
+   as the pricing/dashboard/profile pages) shows full-bleed, the mobile
+   topbar hides, the card chrome is dropped, and the content sits in a
+   centered two-column body (Coverage left; Documents + Need help right) on
+   the app's off-white canvas.
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* Single column: header row, scrolling body, no footer. (The global
+     desktop rule already un-cards #root > div > div.) */
+  #root > div > div:has(> .policy-page) {
+    display: block !important;
+    padding: 0 !important;
+    background: #fafaf8 !important;
+  }
+  .policy-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* MedMalGuard header spans full width (its own inner max-width centers
+     the bar), matching the pricing/dashboard pages. */
+  .policy-page > .app-header {
+    width: 100%;
+  }
+
+  /* Mobile minimal topbar replaced by the header above. */
+  .policy-page .policy-mobile-topbar {
+    display: none !important;
+  }
+
+  /* Body fills remaining height; content centers in a comfortable column. */
+  .policy-page .policy-body {
+    flex: 1;
+    align-items: center;
+    padding: 40px 24px !important;
+    overflow: visible !important;
+  }
+
+  /* The policy card: a real card on desktop (white, bordered, soft shadow),
+     wide enough for two columns. On mobile it is an unstyled passthrough,
+     so the phone layout is unchanged. */
+  .policy-page .policy-card {
+    width: 100%;
+    max-width: 760px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+    padding: 24px 32px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Two-column body: Coverage (left) | Documents + Need help (right).
+     (On mobile this selector doesn't apply — both stay plain blocks and
+     stack.) */
+  .policy-page .policy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+}

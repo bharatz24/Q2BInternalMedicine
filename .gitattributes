@@ -1,0 +1,16 @@
+# Normalise line endings: the repo is LF everywhere, regardless of a
+# contributor's core.autocrlf. Keeps Prettier (endOfLine: "lf") and the
+# .editorconfig from fighting Git on Windows checkouts.
+* text=auto eol=lf
+
+# Binary — never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+# Generated — collapse in diffs / reviews.
+package-lock.json linguist-generated=true

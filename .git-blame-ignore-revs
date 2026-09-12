@@ -1,0 +1,6 @@
+# Commits to skip in `git blame` — bulk formatting / codemods with no logic change.
+# Enable once per clone:  git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Prettier adopted repo-wide (REACT_FRONTEND_AUDIT.md §10.1). Fill in the hash
+# of the "style(prettier): format entire tree" commit once it lands:
+# <commit-sha>

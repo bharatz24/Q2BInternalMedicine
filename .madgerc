@@ -1,0 +1,9 @@
+{
+  "fileExtensions": ["js", "jsx", "ts", "tsx"],
+  "tsConfig": "tsconfig.json",
+  "detectiveOptions": {
+    "es6": { "mixedImports": true },
+    "ts": { "mixedImports": true, "skipTypeImports": true }
+  },
+  "excludeRegExp": ["node_modules", "dist"]
+}
