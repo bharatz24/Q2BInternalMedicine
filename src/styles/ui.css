@@ -256,8 +256,10 @@ select:focus-visible {
    and "No" came out different widths and a longer option ("Not applicable")
    threw the row out again on every question — while the other pages drew the
    same questions as stacked RadioCards entirely. Here the options share one
-   bordered track and split it evenly (`flex: 1 1 0` off a zero basis), so a
-   question presents the same control at the same size wherever it renders.
+   bordered track and grow to their labels (`flex: 1 0 auto` + nowrap), so a
+   two-word option ("Minor Surgery", "12-20 hours") stays one line instead of
+   shrinking to the longest word and wrapping. Yes/No stays compact; longer
+   lists stay one row and still match wherever they render.
 
    Native `<input type="radio">` inside each label, visually hidden: that buys
    arrow-key navigation, the roving tab stop and the checked state from the
@@ -276,15 +278,20 @@ select:focus-visible {
   background: #fff;
 }
 .q-segment {
-  flex: 1 1 0;
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 76px;
-  padding: 7px 16px;
+  min-height: 44px;
+  padding: 10px 16px;
   border-left: 1px solid #dcdcd8;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
   text-align: center;
+  white-space: nowrap;
   color: #555;
   background: #fff;
   cursor: pointer;

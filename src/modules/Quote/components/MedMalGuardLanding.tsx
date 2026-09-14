@@ -56,6 +56,19 @@ import ilfDlfStore from "@/modules/Quote/store/ilfDlfStore";
 import { useIlfDlfFetcher, useCoverageLimitsFetcher } from "@/modules/Quote/utils/useIlfDlfFetcher";
 import { formatUsd } from "@/modules/Quote/utils/decimal";
 import { DESIGNATIONS } from "@/modules/Quote/data/designations.js";
+import quoteHeroImg from "@/Quote.webp";
+
+const visuallyHidden: CSSProperties = {
+  position: "absolute",
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: "hidden",
+  clip: "rect(0 0 0 0)",
+  whiteSpace: "nowrap",
+  border: 0,
+};
 import {
   invalidMessage,
   isValidMdyDate,
@@ -69,13 +82,9 @@ import {
 } from "@/shared/components/Field";
 import {
   Shield,
-  Check,
-  CheckCircle,
   Phone,
   Mail,
-  FileText,
   ArrowRight,
-  Star,
   Calendar,
   ChevronDown,
   X,
@@ -329,78 +338,25 @@ export default function MedMalGuardLanding() {
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <div className="mmg-section mmg-hero">
         <div className="mmg-hero__left">
-          <span className="mmg-chip" style={chip}>
-            <Check size={13} color={C.accentStrong} sw={3} />
-            Coverage by Doctors Professional Liability, RRG
-          </span>
-
-          <h1 className="mmg-h1" style={h1}>
-            Internal Medicine <br className="mmg-h1__br" />
-            Malpractice Insurance.
+          {/* Hero banner — carries the headline and marketing copy as artwork;
+              the h1 stays in the DOM, visually hidden, for screen readers. */}
+          <h1 className="mmg-h1" style={visuallyHidden}>
+            Internal Medicine Malpractice Insurance
           </h1>
-
-          <p className="mmg-sub" style={sub}>
-            Coverage for internal medicine providers — MD, DO, PA, NP, CRNA, CNM and others — priced
-            by where you practice, and bound online in a single session.
-          </p>
-
-          {/* Certificate-in-minutes callout */}
-          <div style={callout}>
-            <FileText size={22} color={C.successStrong} />
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 18, color: C.successDeep, lineHeight: 1.2 }}>
-                Certificate in minutes
-              </div>
-              <div style={{ fontWeight: 500, fontSize: 13, color: C.successStrong, marginTop: 3 }}>
-                On straightforward submissions — emailed instantly
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 13, marginTop: 22 }}>
-            {[
-              "Bind online in one session — no agent call required",
-              "10,000+ practitioners insured and counting",
-              "License Defense Protection included",
-            ].map((t) => (
-              <div
-                key={t}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 11,
-                  fontWeight: 500,
-                  fontSize: 15,
-                  color: C.inkSoft,
-                }}
-              >
-                <CheckCircle size={20} color={C.success} />
-                <span>{t}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Star rating + social-proof line, shown above the Demotech seal. */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 26 }}>
-            <span style={{ display: "inline-flex", gap: 2 }}>
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} size={18} color="#f6c23e" fill="#f6c23e" />
-              ))}
-            </span>
-            <span style={{ fontWeight: 500, fontSize: 15, color: C.body }}>
-              Trusted by <strong style={{ fontWeight: 800, color: C.ink }}>10,000+</strong> insured
-              practitioners
-            </span>
-          </div>
-
           <img
-            src="/demotech-fsr-a.png"
-            alt="Demotech Financial Stability Rating: A (Exceptional)"
-            width={400}
-            height={209}
-            loading="lazy"
+            src={quoteHeroImg}
+            alt="Internal Medicine Malpractice Insurance, coverage by Doctors Professional Liability, RRG. Coverage for internal medicine providers (MD, DO, PA, NP, CRNA, CNM and others), priced by where you practice and bound online in a single session. Certificate in minutes; License Defense Protection included; trusted by 10,000+ insured practitioners; Demotech Financial Stability Rating A (Exceptional)."
+            width={1024}
+            height={1330}
+            fetchPriority="high"
             decoding="async"
-            style={{ height: 60, width: "auto", marginTop: 14, display: "block" }}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "auto",
+              borderRadius: 16,
+              boxShadow: "0 10px 30px rgba(15, 40, 80, .12)",
+            }}
           />
         </div>
 
@@ -472,23 +428,16 @@ export default function MedMalGuardLanding() {
                         Loading limits…
                       </div>
                     ) : coverageLimits.length > 0 ? (
-                      <div
-                        role="group"
-                        aria-label="Limit of liability"
-                        style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
+                      <CalcSelect
+                        value={selectedLimitId ?? ""}
+                        onChange={(v) => setSelectedLimitId(Number(v))}
                       >
                         {coverageLimits.map((l) => (
-                          <button
-                            key={l.id}
-                            type="button"
-                            aria-pressed={selectedLimitId === l.id}
-                            onClick={() => setSelectedLimitId(l.id)}
-                            style={chipBtn(selectedLimitId === l.id, false)}
-                          >
+                          <option key={l.id} value={l.id}>
                             {l.limit}
-                          </button>
+                          </option>
                         ))}
-                      </div>
+                      </CalcSelect>
                     ) : (
                       <div style={{ fontSize: 12, color: C.muted, padding: "4px 0" }}>
                         No selectable limits for this ZIP — the state default applies.
@@ -1758,6 +1707,66 @@ function CalcInput({
   );
 }
 
+// Native <select> styled like CalcInput, with a chevron drawn over the right
+// edge (pointer-events: none so clicks still open the native list).
+function CalcSelect({
+  value,
+  onChange,
+  children,
+}: {
+  value: string | number;
+  onChange: (value: string) => void;
+  children: ReactNode;
+}) {
+  const fieldProps = useFieldControlProps();
+  return (
+    <div style={{ position: "relative" }}>
+      <select
+        {...fieldProps}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%",
+          boxSizing: "border-box",
+          appearance: "none",
+          WebkitAppearance: "none",
+          border: `1px solid ${C.inputBorder}`,
+          borderRadius: 10,
+          padding: "13px 42px 13px 15px",
+          fontFamily: "inherit",
+          fontWeight: 600,
+          fontSize: 16,
+          color: C.ink,
+          background: "#fff",
+          cursor: "pointer",
+          transition: "background .15s ease-in-out, box-shadow .15s ease-in-out",
+        }}
+        onFocus={(e) => {
+          e.target.style.boxShadow = FOCUS_RING;
+          e.target.style.background = C.accentTint;
+        }}
+        onBlur={(e) => {
+          e.target.style.boxShadow = "none";
+          e.target.style.background = "#fff";
+        }}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        size={16}
+        color={C.body}
+        style={{
+          position: "absolute",
+          right: 15,
+          top: "50%",
+          transform: "translateY(-50%)",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+}
+
 // Effective-date input: a manual-entry MM/DD/YYYY text field with a calendar
 // affordance on the right. Typing works exactly as before. The native date
 // picker opens when the calendar area is tapped/clicked.
@@ -1933,45 +1942,6 @@ const solidNavBtn: CSSProperties = {
   transition: "background .15s ease-in-out",
 };
 
-const chip: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  background: C.accentTint,
-  color: C.accentStrong,
-  fontWeight: 700,
-  fontSize: 11,
-  textTransform: "uppercase",
-  letterSpacing: ".06em",
-  padding: "8px 12px",
-  borderRadius: 20,
-};
-const h1: CSSProperties = {
-  fontWeight: 800,
-  fontSize: 52,
-  lineHeight: 1.05,
-  letterSpacing: "-.02em",
-  color: C.ink,
-  margin: "18px 0 0",
-};
-const sub: CSSProperties = {
-  fontSize: 18,
-  lineHeight: 1.6,
-  color: C.body,
-  maxWidth: 480,
-  margin: "16px 0 0",
-};
-const callout: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 14,
-  background: C.successTint,
-  border: `1px solid ${C.successBorder}`,
-  borderRadius: 12,
-  padding: "14px 18px",
-  marginTop: 24,
-};
-
 const calcCard: CSSProperties = {
   background: "#fff",
   border: `1px solid ${C.border}`,
@@ -1996,33 +1966,6 @@ const estimateBlock: CSSProperties = {
   padding: "16px 18px",
   marginBottom: 16,
 };
-// Designation/speciality chip buttons in the hero calculator. Sized to their
-// own content (no flex-grow/shrink, no minWidth: 0) so the wrapping flex
-// container they sit in actually wraps instead of crushing every chip onto
-// one line — flex: "1 1 0" + minWidth: 0 (this style's shape when it was
-// `weekPresetBtn`, built for exactly 4 fixed week-preset buttons) lets a
-// flex item shrink past its own text width, which is what overlapped every
-// speciality's label on top of its neighbors once there were ~15 of them.
-const chipBtn = (selected: boolean, disabled: boolean): CSSProperties => ({
-  boxSizing: "border-box",
-  border: `1px solid ${selected ? C.accent : C.inputBorder}`,
-  background: selected ? C.accentTint : "#fff",
-  color: selected ? C.accentStrong : C.body,
-  fontWeight: 700,
-  fontSize: 12,
-  lineHeight: 1,
-  fontFamily: "inherit",
-  padding: "9px 12px",
-  borderRadius: 8,
-  cursor: disabled ? "not-allowed" : "pointer",
-  opacity: disabled ? 0.5 : 1,
-  transition: "background .15s ease-in-out, border-color .15s ease-in-out",
-  whiteSpace: "nowrap",
-  flexShrink: 0,
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-});
 const metaChip: CSSProperties = {
   display: "inline-block",
   background: "#fff",
