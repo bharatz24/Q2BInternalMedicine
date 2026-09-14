@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { QuoteStrip } from "@/modules/Quote/components/QuoteStrip";
-import { QuestionRenderer } from "@/modules/Quote/components/QuestionRenderer";
+import { QuestionRenderer, isCompactQuestion } from "@/modules/Quote/components/QuestionRenderer";
 import { Spacer } from "@/shared/components/Spacer";
 import Alert from "@/shared/components/Alert";
 import Loader from "@/shared/components/Loader";
@@ -14,6 +14,7 @@ import {
   isQuestionVisible as isVisibilityQuestionVisible,
   mergeAnswerMaps,
   recomputeHiddenQuestionIds,
+  normalizeQuestionType,
   requiredQuestionsAnswered,
   saveSubmissionQuestionAnswers,
   sortedQuestions,
@@ -29,6 +30,14 @@ import { useQuoteSnapshot } from "@/modules/Quote/utils/useQuoteSnapshot";
 
 const PREVIOUS_INSURANCE_GROUP_RE = /previous\s*insurance/i;
 const CLAIMS_GROUP_RE = /claims\s*information/i;
+
+// Previous Insurance's carrier / limits / premium TEXTBOXes are short named
+// values — they pair in `.q-grid` the same way counts and dates do on
+// /practice. Claims' TEXT_AREA explain boxes stay full-row.
+function isPageCompact(question: any): boolean {
+  if (isCompactQuestion(question)) return true;
+  return normalizeQuestionType(question?.questionType) === "TEXTBOX";
+}
 
 /**
  * Step 4 (`/previous-insurance`) — Previous Insurance and Claims Information
@@ -252,18 +261,23 @@ export default function PreviousInsuranceClaimsPage() {
           >
             {previousInsuranceGroup.groupName}
           </h3>
-          {sortedQuestions(previousInsuranceGroup.questions)
-            .filter(isTreeVisible)
-            .map((q) => (
-              <QuestionRenderer
-                key={q.id}
-                question={q}
-                answer={previousInsuranceAnswers[String(q.id)]}
-                onSetRadio={() => {}}
-                onToggleCheckbox={() => {}}
-                onSetText={setPreviousInsuranceText}
-              />
-            ))}
+          {/* Same `.q-grid` as /practice — short TEXTBOXes pair, Yes/No and
+              explain TEXT_AREAs span the row. */}
+          <div className="q-grid">
+            {sortedQuestions(previousInsuranceGroup.questions)
+              .filter(isTreeVisible)
+              .map((q) => (
+                <div key={q.id} className={isPageCompact(q) ? undefined : "q-grid-item--full"}>
+                  <QuestionRenderer
+                    question={q}
+                    answer={previousInsuranceAnswers[String(q.id)]}
+                    onSetRadio={() => {}}
+                    onToggleCheckbox={() => {}}
+                    onSetText={setPreviousInsuranceText}
+                  />
+                </div>
+              ))}
+          </div>
         </>
       )}
 
@@ -281,18 +295,21 @@ export default function PreviousInsuranceClaimsPage() {
           >
             {claimsGroup.groupName}
           </h3>
-          {sortedQuestions(claimsGroup.questions)
-            .filter(isTreeVisible)
-            .map((q) => (
-              <QuestionRenderer
-                key={q.id}
-                question={q}
-                answer={claimsAnswers[String(q.id)]}
-                onSetRadio={setClaimsRadio}
-                onToggleCheckbox={() => {}}
-                onSetText={setClaimsText}
-              />
-            ))}
+          <div className="q-grid">
+            {sortedQuestions(claimsGroup.questions)
+              .filter(isTreeVisible)
+              .map((q) => (
+                <div key={q.id} className={isPageCompact(q) ? undefined : "q-grid-item--full"}>
+                  <QuestionRenderer
+                    question={q}
+                    answer={claimsAnswers[String(q.id)]}
+                    onSetRadio={setClaimsRadio}
+                    onToggleCheckbox={() => {}}
+                    onSetText={setClaimsText}
+                  />
+                </div>
+              ))}
+          </div>
         </>
       )}
 

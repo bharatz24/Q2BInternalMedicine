@@ -315,6 +315,18 @@ select:focus-visible {
   outline: 2px solid var(--q-segment-accent, #1a1a1a);
   outline-offset: -2px;
 }
+/* Sentence-length labels (Claims' tail-coverage radio) cannot stay nowrap
+   chips without overflowing the form column. Fill the row, split evenly,
+   and wrap inside each segment. */
+.q-segments--fill {
+  display: flex;
+  width: 100%;
+}
+.q-segments--fill .q-segment {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: normal;
+}
 /* Question header row — the prompt on the left, an inline control parked at
    its right edge (today: the "Select all" box over a CHECKBOX list). The
    control costs no vertical space of its own this way, which is the whole
@@ -359,13 +371,15 @@ select:focus-visible {
 }
 
 /* Question grid — the page-level layout for a tree group. A tree
-   group such as `/practice`'s "License, Scope & Practice" runs to ~30
-   questions; rendering every one of them full-width turns a form into a
-   scroll. Questions that take a short answer (a count, a date — see
-   `isCompactQuestion` in QuestionRenderer) claim one column, everything
-   else spans the row, so the page reads as a laid-out form rather than a
-   list. Collapses to a single column in the phone-width form column, where
-   two tracks would leave neither one usable. */
+   group such as `/practice`'s "License, Scope & Practice" or
+   `/previous-insurance`'s Previous Insurance + Claims Information runs
+   long; rendering every field full-width turns a form into a scroll.
+   Questions that take a short answer (a count, a date, Previous
+   Insurance's named TEXTBOXes — see `isCompactQuestion` /
+   `isPageCompact`) claim one column, everything else spans the row, so
+   the page reads as a laid-out form rather than a list. Collapses to a
+   single column in the phone-width form column, where two tracks would
+   leave neither one usable. */
 .q-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

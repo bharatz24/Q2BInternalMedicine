@@ -19,6 +19,9 @@ interface ChoiceSegmentsProps {
   accentFor?: (option: any) => string;
 }
 
+/** Labels longer than this fill the row and wrap instead of overflowing as nowrap chips. */
+const LONG_LABEL_CHARS = 22;
+
 /**
  * The single-choice control for a question tree option list: one bordered
  * track, options splitting it evenly.
@@ -38,6 +41,10 @@ interface ChoiceSegmentsProps {
  * the control separates each explanation from the option it explains. A card
  * keeps the two together, which is the whole reason the tree author wrote a
  * description in the first place.
+ *
+ * Long labels (Claims' tail-coverage radio) also keep the shared track, but
+ * fill the form column and wrap inside each segment — nowrap chips would
+ * overflow the row.
  */
 export function ChoiceSegments({
   options,
@@ -48,6 +55,9 @@ export function ChoiceSegments({
   accentFor,
 }: ChoiceSegmentsProps) {
   const described = options.some((o: any) => o.optionDescription || o.description);
+  const longLabels = options.some(
+    (o: any) => String(o.optionLabel ?? "").trim().length > LONG_LABEL_CHARS,
+  );
 
   if (described) {
     return (
@@ -68,7 +78,11 @@ export function ChoiceSegments({
   }
 
   return (
-    <div className="q-segments" role="radiogroup" aria-label={ariaLabel}>
+    <div
+      className={longLabels ? "q-segments q-segments--fill" : "q-segments"}
+      role="radiogroup"
+      aria-label={ariaLabel}
+    >
       {options.map((o: any) => {
         const selected = isSelected(o);
         return (
