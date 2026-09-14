@@ -1,0 +1,10 @@
+# Netlify-only deploy config — not used by Vercel, and shipping it would just
+# confuse the build. The files stay in git (see README "Deploy"); they're only
+# excluded from the upload.
+netlify/
+netlify.toml
+
+# Never needed by the build.
+docs/
+dist/
+coverage/

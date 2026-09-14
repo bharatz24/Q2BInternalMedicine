@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["netlify/edge-functions/*.js"],
+  "entry": ["api/**/*.js", "netlify/edge-functions/*.js"],
   "project": ["src/**/*.{js,jsx,ts,tsx}"],
   "ignore": ["src/local/**", "src/modules/Quote/data/**", "src/shared/dtos/**"],
   "ignoreDependencies": ["@netlify/edge-functions"],

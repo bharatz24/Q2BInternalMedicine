@@ -133,11 +133,19 @@ export default tseslint.config(
     },
   },
 
-  // ---- Netlify edge runtime (Deno + Netlify globals, no Node) ------------
+  // ---- Edge runtimes (Vercel + Netlify) ----------------------------------
+  // Web-standard globals, not a DOM and not full Node. `process` is readable on
+  // Vercel's edge runtime and `Netlify`/`Deno` on Netlify's — `config/upstream.js`
+  // feature-detects all three, so declare the union here.
   {
-    files: ["netlify/edge-functions/**/*.js", "config/upstream.js"],
+    files: ["api/**/*.js", "netlify/edge-functions/**/*.js", "config/upstream.js"],
     languageOptions: {
-      globals: { ...globals.deno, Netlify: "readonly", Deno: "readonly" },
+      globals: {
+        ...globals.deno,
+        Netlify: "readonly",
+        Deno: "readonly",
+        process: "readonly",
+      },
     },
     rules: { "no-console": "off" },
   },

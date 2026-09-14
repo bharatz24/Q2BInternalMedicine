@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { BRAND, RED, RED_BG } from "@/shared/constants";
 import { QuoteStrip } from "@/modules/Quote/components/QuoteStrip";
 import { QuestionRenderer } from "@/modules/Quote/components/QuestionRenderer";
+import { ChoiceSegments } from "@/modules/Quote/components/ChoiceSegments";
 import { AttachmentField } from "@/shared/components/AttachmentField";
+import { RequiredMark } from "@/shared/components/RequiredMark";
 import { Spacer } from "@/shared/components/Spacer";
 import Alert from "@/shared/components/Alert";
 import Loader from "@/shared/components/Loader";
@@ -159,6 +161,18 @@ export default function UnderwritingPage() {
     questionsStore.underwritingAnswers = { ...underwritingAnswers, [qid]: next };
     recomputeHidden();
   };
+
+  // Bulk replace (QuestionRenderer's "Select all"). One write, not one per
+  // option — `toggleCheckbox` reads the `underwritingAnswers` captured in
+  // this render, so looping it would have every call start from the same
+  // snapshot.
+  const setCheckboxes = (q: any, optionIds: string[]) => {
+    questionsStore.underwritingAnswers = {
+      ...underwritingAnswers,
+      [String(q.id)]: optionIds,
+    };
+    recomputeHidden();
+  };
   const setText = (q: any, value: any) => {
     questionsStore.underwritingAnswers = {
       ...underwritingAnswers,
@@ -236,7 +250,7 @@ export default function UnderwritingPage() {
         >
           <span style={{ color: "#595959", fontWeight: 500 }}>{yesNoNumber.get(q.id)}.</span>{" "}
           {q.questionText}
-          {q.isRequired && <span style={{ color: RED, marginLeft: 4 }}>*</span>}
+          {q.isRequired && <RequiredMark />}
         </div>
         {q.questionDescription && (
           <div
@@ -251,55 +265,15 @@ export default function UnderwritingPage() {
             {q.questionDescription}
           </div>
         )}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {opts.map((o) => {
-            const isYes = isYesOption(o);
-            const sel = isOptionSelected(q, o.id);
-            const desc = o.optionDescription || o.description || null;
-            return (
-              <div
-                key={o.id}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 2,
-                }}
-              >
-                <button
-                  onClick={() => setRadio(q, o.id)}
-                  style={{
-                    padding: "6px 18px",
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    fontFamily: "var(--font-body)",
-                    border: "none",
-                    background: sel ? (isYes ? RED : BRAND) : "#e8e8e6",
-                    color: sel ? "#fff" : "#666",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {o.optionLabel}
-                </button>
-                {desc && (
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: "#595959",
-                      lineHeight: 1.4,
-                      paddingLeft: 2,
-                      fontFamily: "var(--font-body)",
-                    }}
-                  >
-                    {desc}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <ChoiceSegments
+          options={opts}
+          name={`q-${qid}`}
+          ariaLabel={String(q.questionText || "")}
+          isSelected={(o) => Boolean(isOptionSelected(q, o.id))}
+          onSelect={(o) => setRadio(q, o.id)}
+          /* A Yes here is the adverse disclosure — same red as the row. */
+          accentFor={(o) => (isYesOption(o) ? RED : BRAND)}
+        />
       </div>
     );
   };
@@ -362,6 +336,7 @@ export default function UnderwritingPage() {
             answer={underwritingAnswers[String(q.id)]}
             onSetRadio={setRadio}
             onToggleCheckbox={toggleCheckbox}
+            onSetCheckboxes={setCheckboxes}
             onSetText={setText}
           />
         ),

@@ -1,6 +1,7 @@
 import { createContext, useContext, useId } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { ORANGE, ORANGE_BG, RED } from "@/shared/constants";
+import { ORANGE, ORANGE_BG } from "@/shared/constants";
+import { RequiredMark } from "@/shared/components/RequiredMark";
 import { labelBase } from "@/shared/utils/styles";
 
 /**
@@ -99,11 +100,8 @@ export const Field = ({
     <div style={{ marginBottom: 14, ...extra }}>
       <label htmlFor={controlId} style={labelBase}>
         {label}
-        {required && (
-          <span style={{ color: RED, marginLeft: 4 }} aria-hidden="true">
-            *
-          </span>
-        )}
+        {/* `announce` off: the control already carries `aria-required`. */}
+        {required && <RequiredMark announce={false} />}
         {badge && (
           <span
             style={{

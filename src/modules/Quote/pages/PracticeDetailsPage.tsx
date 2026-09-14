@@ -133,6 +133,14 @@ export default function PracticeDetailsPage() {
     recomputeMasterHidden();
   };
 
+  // Bulk replace (QuestionRenderer's "Select all"). One write, not one per
+  // option — `toggleCheckbox` reads the `questionAnswers` captured in this
+  // render, so looping it would have every call start from the same snapshot.
+  const setCheckboxes = (q: any, optionIds: string[]) => {
+    questionsStore.questionAnswers = { ...questionAnswers, [String(q.id)]: optionIds };
+    recomputeMasterHidden();
+  };
+
   const setText = (q: any, value: any) => {
     questionsStore.questionAnswers = { ...questionAnswers, [String(q.id)]: value };
   };
@@ -201,10 +209,10 @@ export default function PracticeDetailsPage() {
       {error && <Alert type="error">Couldn&apos;t load questions. {error.message}</Alert>}
 
       {/* Two-column form grid — this group runs to ~30 questions, so the
-          short-answer ones (the two specialty percentages, the weekly
-          patient count, the follow-up text boxes) pair up instead of each
-          taking a row of its own. `.q-grid` (styles/ui.css) drops back to
-          one column in the phone-width form column. */}
+          short counts and dates pair up. Specialty-percentage NUMBER_INPUTs
+          and free-text questions are never compact: they run line by line at
+          full width, see `isCompactQuestion`. `.q-grid` (styles/ui.css) drops
+          back to one column in the phone-width form column. */}
       <div className="q-grid">
         {group?.questions?.filter(isVisible)?.map((q: any) => (
           <div key={q.id} className={isCompactQuestion(q) ? undefined : "q-grid-item--full"}>
@@ -213,6 +221,7 @@ export default function PracticeDetailsPage() {
               answer={questionAnswers[String(q.id)]}
               onSetRadio={setRadio}
               onToggleCheckbox={toggleCheckbox}
+              onSetCheckboxes={setCheckboxes}
               onSetText={setText}
               note={
                 HOURS_PER_WEEK_QUESTION_RE.test(String(q.questionText || ""))

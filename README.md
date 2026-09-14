@@ -30,6 +30,37 @@ SP_14 rates and the SP_14 question tree (plan B1–B4).
 | `npm run format:check` | Prettier check                              |
 | `npm run lint:arch`    | Circular-import check + knip dead-code scan |
 
+## Deploy (Vercel)
+
+`vercel.json` is the deploy config. Vercel serves `dist/` as static files and runs two
+**edge functions** from `api/`:
+
+| Route          | File                | What                                                                                                                        |
+| -------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `/api/*`       | `api/[...path].js`  | Proxies to `ins`, re-emitting its `Set-Cookie` as a host-only first-party cookie so iOS Safari (ITP) keeps the auth session |
+| `/_csp-report` | `api/csp-report.js` | CSP violation sink — logs to the function log                                                                               |
+
+Everything else falls through the SPA rewrite to `index.html`, so a reload on
+`/practice` or `/underwriting` still works. Security headers (CSP, HSTS,
+Permissions-Policy) and the immutable `/assets/*` cache live in `vercel.json`'s
+`headers`.
+
+Project settings that matter:
+
+- **Node.js Version: 22.x.** `package.json` `engines` pins `>=22.12 <23` (vite 7 /
+  vitest 3); 24.x fails the build.
+- **Cold Start Prevention: off.** Both functions are edge, not serverless — nothing to
+  keep warm.
+- **`VITE_UPSTREAM_URL`** must be set per environment (Production / Preview) to the
+  `ins` base URL. Edge functions can't read `.env.local`, so without it
+  `config/upstream.js` falls back to `http://localhost:8089` and every `/api/*` call
+  returns 502.
+
+`netlify.toml` + `netlify/edge-functions/` are kept for the Netlify path (and carry the
+long-form rationale for each CSP directive). They are excluded from the Vercel upload by
+`.vercelignore`. **The CSP and the proxy logic are now duplicated — change one, change
+the other.**
+
 ## Wizard
 
 `/` → `/quote` → `/practice` → `/register` → `/previous-insurance` → `/underwriting` →

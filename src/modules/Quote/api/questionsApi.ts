@@ -334,12 +334,32 @@ export function isQuestionVisible(question: any, hiddenQuestionIds: any): boolea
  * and every `questionType` check must go through this rather than compare a
  * raw string.
  */
+/**
+ * Separator-free spellings of the multi-word types, folded onto the canonical
+ * form. The pass below has only the separator to go on, so a seed that spells
+ * the type `TextArea` (or `textarea`) normalises to `TEXTAREA` and then
+ * matches nothing: `isFreeTextQuestionType` says false, so the answer is never
+ * hydrated or saved, and `QuestionRenderer` has no branch for it, so the
+ * question renders as a bare label with no field at all — the exact failure
+ * that component's docstring warns about. Folding the aliases in one place
+ * fixes every consumer at once. Safe because this result is only ever
+ * compared, never sent back to `ins`.
+ */
+const QUESTION_TYPE_ALIASES: Record<string, string> = {
+  TEXTAREA: "TEXT_AREA",
+  NUMBERINPUT: "NUMBER_INPUT",
+  DATEPICKER: "DATE_PICKER",
+  YESNO: "YES_NO",
+  RADIOBUTTON: "RADIO_BUTTON",
+};
+
 export function normalizeQuestionType(questionType: unknown): string {
-  return String(questionType || "")
+  const type = String(questionType || "")
     .trim()
     .toUpperCase()
     .replace(/[^A-Z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
+  return QUESTION_TYPE_ALIASES[type] ?? type;
 }
 
 /**

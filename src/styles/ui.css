@@ -237,24 +237,128 @@ select:focus-visible {
    inline (they are still stacked elsewhere in the app), which would
    otherwise add to `gap` and break the row rhythm. `height: 100%` squares
    off the cards in a row whose labels wrap to different line counts. */
-.q-option-grid {
-  display: grid;
-  gap: 8px;
-  align-items: stretch;
+/* Checkbox option flow — width-based layout for a CHECKBOX option list.
+   A CHECKBOX question packs its options left-to-right and wraps when the row
+   runs out, each option only as wide as its own label needs, instead of being
+   forced into equal grid tracks. The grid stacked anything with a description
+   line or a long label one-per-row, which turned a 6-option list into six
+   near-empty full-width rows; here a long option simply claims the row it
+   needs (`max-width: 100%`) and the short ones sit several across.
+   `min-width` keeps a two-character label from collapsing into a pill, and
+   `align-items: stretch` keeps every option in a row the same height.
+   `Toggle` hard-codes `width: 100%` inline, so the override has to out-rank
+   it — the same reason the `margin-bottom` reset above is `!important`. */
+/* Single-choice segmented control — every yes/no and radio question in the
+   tree (`ChoiceSegments`), on /practice, /previous-insurance and
+   /underwriting alike.
+
+   /underwriting drew these as loose pills padded to their own label, so "Yes"
+   and "No" came out different widths and a longer option ("Not applicable")
+   threw the row out again on every question — while the other pages drew the
+   same questions as stacked RadioCards entirely. Here the options share one
+   bordered track and split it evenly (`flex: 1 1 0` off a zero basis), so a
+   question presents the same control at the same size wherever it renders.
+
+   Native `<input type="radio">` inside each label, visually hidden: that buys
+   arrow-key navigation, the roving tab stop and the checked state from the
+   platform instead of re-implementing them on <button>. The accent colour is
+   handed in per option as `--q-segment-accent` because it differs by context
+   (a Yes on an underwriting disclosure is the adverse answer — RED —
+   everything else BRAND).
+   Selected state comes from `data-checked` rather than `:has()` so the rule
+   does not depend on selector support. */
+.q-segments {
+  display: inline-flex;
+  max-width: 100%;
+  border: 1px solid #dcdcd8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
 }
-.q-option-grid > button {
+.q-segment {
+  flex: 1 1 0;
+  min-width: 76px;
+  padding: 7px 16px;
+  border-left: 1px solid #dcdcd8;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  color: #555;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.q-segment:first-child {
+  border-left: 0;
+}
+.q-segment:hover:not([data-checked="true"]) {
+  background: #f2f2ef;
+  color: #333;
+}
+.q-segment[data-checked="true"] {
+  background: var(--q-segment-accent, #1a1a1a);
+  color: #fff;
+}
+/* The real radio is `.sr-only`, so the ring has to come from the label. */
+.q-segment:focus-within {
+  outline: 2px solid var(--q-segment-accent, #1a1a1a);
+  outline-offset: -2px;
+}
+/* Question header row — the prompt on the left, an inline control parked at
+   its right edge (today: the "Select all" box over a CHECKBOX list). The
+   control costs no vertical space of its own this way, which is the whole
+   point: a full-width "Select all" card above the options pushed every list
+   down a row and read as a seventh option. `SectionTitle` sets its margins
+   inline, so zeroing the bottom one here needs to out-rank them; the row owns
+   the spacing instead. On a narrow form column the row wraps and the control
+   drops below the prompt rather than squeezing it. */
+.q-question-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.q-question-head > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
   margin-bottom: 0 !important;
-  height: 100%;
 }
 
-/* Question grid — the page-level counterpart of `.q-option-grid`. A tree
+.q-option-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+.q-option-flow > button {
+  width: auto !important;
+  margin-bottom: 0 !important;
+  flex: 0 1 auto;
+  min-width: 140px;
+  max-width: 100%;
+}
+/* Described options (`RadioCard`) flow the same way, but a card carries a
+   radio dot, a title and a subtitle — 140px leaves all three cramped, so the
+   floor is wider. A card whose description runs long still claims the whole
+   row via `max-width`, which is the natural place for it to break. */
+.q-option-flow--cards > button {
+  min-width: 200px;
+}
+
+/* Question grid — the page-level layout for a tree group. A tree
    group such as `/practice`'s "License, Scope & Practice" runs to ~30
    questions; rendering every one of them full-width turns a form into a
-   scroll. Questions that take a short answer (a percentage, a count, a
-   date — see `isCompactQuestion` in QuestionRenderer) claim one column,
-   everything else spans the row, so the page reads as a laid-out form
-   rather than a list. Collapses to a single column in the phone-width
-   form column, where two tracks would leave neither one usable. */
+   scroll. Questions that take a short answer (a count, a date — see
+   `isCompactQuestion` in QuestionRenderer) claim one column, everything
+   else spans the row, so the page reads as a laid-out form rather than a
+   list. Collapses to a single column in the phone-width form column, where
+   two tracks would leave neither one usable. */
 .q-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
