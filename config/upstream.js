@@ -1,5 +1,5 @@
 // Backend base URL for the production `/api/*` edge proxy —
-// `api/[...path].js` on Vercel, `netlify/edge-functions/api-proxy.js` on
+// `api/proxy.js` on Vercel, `netlify/edge-functions/api-proxy.js` on
 // Netlify. Both read VITE_UPSTREAM_URL from the platform's deploy-context
 // environment (Vercel: Project Settings → Environment Variables, per
 // environment; Netlify: Site settings → Environment variables, per context).

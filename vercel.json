@@ -5,6 +5,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/_csp-report", "destination": "/api/csp-report" },
+    { "source": "/api/:path*", "destination": "/api/proxy?__path=:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [

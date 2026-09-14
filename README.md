@@ -37,7 +37,7 @@ SP_14 rates and the SP_14 question tree (plan B1–B4).
 
 | Route          | File                | What                                                                                                                        |
 | -------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `/api/*`       | `api/[...path].js`  | Proxies to `ins`, re-emitting its `Set-Cookie` as a host-only first-party cookie so iOS Safari (ITP) keeps the auth session |
+| `/api/*`       | `api/proxy.js`      | Proxies to `ins`, re-emitting its `Set-Cookie` as a host-only first-party cookie so iOS Safari (ITP) keeps the auth session |
 | `/_csp-report` | `api/csp-report.js` | CSP violation sink — logs to the function log                                                                               |
 
 Everything else falls through the SPA rewrite to `index.html`, so a reload on

@@ -1,9 +1,12 @@
 // Vercel Edge Function — the production `/api/*` proxy to INS-SERVICE.
 //
 // Ported from `netlify/edge-functions/api-proxy.js`; keep the two in sync (or
-// delete the Netlify one if this repo only ever deploys to Vercel). The
-// filename is the route: `api/[...path].js` catches every `/api/**` request,
-// which is why there is no `config.path` here the way the Netlify version has.
+// delete the Netlify one if this repo only ever deploys to Vercel).
+//
+// Vercel only honours catch-all `[...path]` function filenames in Next.js
+// projects — in this Vite project such a file never matches and every `/api/**`
+// call 404s. So this is a single function and `vercel.json` rewrites
+// `/api/:path*` onto it, passing the original path as `?__path=`.
 //
 // Why a proxy at all: it re-emits the upstream `Set-Cookie` as a host-only
 // FIRST-PARTY cookie on this origin, so iOS Safari (ITP) doesn't drop the auth
@@ -99,7 +102,14 @@ export default async function handler(request) {
   const isHttps = url.protocol === "https:";
 
   try {
-    const targetUrl = UPSTREAM_URL + url.pathname + url.search;
+    // `vercel.json` rewrites `/api/:path*` → `/api/proxy?__path=:path*`, so the
+    // original path arrives as a query param. Rebuild it and drop the param so
+    // upstream sees exactly what the browser requested.
+    const rewrittenPath = url.searchParams.get("__path");
+    url.searchParams.delete("__path");
+    const pathname =
+      rewrittenPath != null ? `/api/${rewrittenPath.replace(/^\/+/, "")}` : url.pathname;
+    const targetUrl = UPSTREAM_URL + pathname + url.search;
 
     const headers = new Headers();
     for (const name of FORWARDED_REQUEST_HEADERS) {
