@@ -170,7 +170,7 @@ export default async function handler(request) {
     // edge-function crash with no detail. Log the real cause and return a real
     // HTTP response instead.
     console.error(
-      `api-proxy: upstream request failed for ${url.pathname} — ${err?.message || err}`,
+      `api-proxy: upstream request failed for ${url.pathname} (upstream ${UPSTREAM_URL}) — ${err?.message || err}${err?.cause ? ` [cause: ${err.cause.message || err.cause}]` : ""}`,
     );
     return new Response(JSON.stringify({ error: "Upstream request failed" }), {
       status: 502,
