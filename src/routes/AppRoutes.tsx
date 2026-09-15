@@ -20,6 +20,7 @@ const PreviousInsuranceClaimsPage = lazy(
 );
 const UnderwritingPage = lazy(() => import("@/modules/Quote/pages/UnderwritingPage"));
 const ArticlesPage = lazy(() => import("@/modules/Quote/pages/ArticlesPage"));
+const ExperiencePage = lazy(() => import("@/modules/Quote/pages/ExperiencePage"));
 
 const ReviewDocusignPage = lazy(() => import("@/modules/Payment/pages/ReviewDocusignPage"));
 const PaymentPage = lazy(() => import("@/modules/Payment/pages/PaymentPage"));
@@ -47,6 +48,7 @@ export default function AppRoutes() {
           <Route path="/order-details" element={<OrderDetailsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/articles" element={<ArticlesPage />} />
+          <Route path="/experience" element={<ExperiencePage />} />
           <Route path="/underwriter-review" element={<UnderwriterReviewPage />} />
           <Route element={<FlowLayout />}>
             <Route path="/" element={<PracticeTypePage />} />
